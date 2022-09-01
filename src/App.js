@@ -10,7 +10,7 @@ const { user } = useAuth();
 return (
   <div className="container">
     <h1>💬 Chat Room</h1>
-    {user ? <AuthenticatedApp  /> : <UnauthenticatedApp />}
+    {user ? <AuthenticatedApp user={user} /> : <UnauthenticatedApp />}
   </div>
 );
 }

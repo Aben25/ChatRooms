@@ -1,4 +1,14 @@
 import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+
 const firebaseConfig = {
   apiKey: "AIzaSyA4qyiBmtX2QdtfQPJky_x4arg83-NoY2g",
   authDomain: "meet-941d4.firebaseapp.com",
@@ -9,10 +19,42 @@ const firebaseConfig = {
   measurementId: "G-422DPM8BZ9",
   // TODO: Add your Firebase configuration here
 };
+
+
 const app = initializeApp(firebaseConfig);
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 
+const db = getFirestore(app);
+function getMessages(roomId, callback) {
+  return onSnapshot(
+    query(
+      collection(db, "chat-rooms", roomId, "messages"),
+      orderBy("timestamp", "asc")
+    ),
+    (querySnapshot) => {
+      const messages = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(messages);
+    }
+  );
+}
+
+
 // ...
+async function sendMessage(roomId, user, text) {
+  try {
+    await addDoc(collection(db, "chat-rooms", roomId, "messages"), {
+      uid: user.uid,
+      displayName: user.displayName,
+      text: text.trim(),
+      timestamp: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 async function loginWithGoogle() {
   try {
@@ -31,4 +73,4 @@ async function loginWithGoogle() {
   }
 }
 
-export { loginWithGoogle };
+export { loginWithGoogle, sendMessage, getMessages };
